@@ -5297,10 +5297,9 @@ Vue.component('example-component', (__webpack_require__(/*! ./components/Example
  * the page. Then, you may begin adding components to this application
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
-
-var app = new Vue({
-  el: '#app'
-});
+// const app = new Vue({
+//     el: '#app',
+// });
 
 /***/ }),
 
