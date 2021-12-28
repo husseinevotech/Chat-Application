@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MessageController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,3 +23,4 @@ Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('conversation/{userId}', [MessageController::class, 'conversation'])->name('message.conversation');
+Route::post('send-message', [MessageController::class, 'sendMessage'])->name('message.send-message');

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="row">
+    <div class="row chat-row">
         <div class="col-md-3">
             <div class="users">
                 <h5>Users</h5>
@@ -9,10 +9,11 @@
                 <ul class="list-group list-chat-item">
                     @if($users->count())
                         @foreach($users as $user)
-                            <li class="chat-user-list @if($user->id == $friendInfo->id) active @endif">
+                            <li class="chat-user-list
+                                @if($user->id == $friendInfo->id) active @endif">
                                 <a href="{{ route('message.conversation', $user->id) }}">
                                     <div class="chat-image">
-                                            {!! makeImageFromName($user->name) !!}
+                                        {!! makeImageFromName($user->name) !!}
                                         <i class="fa fa-circle user-status-icon user-icon-{{ $user->id }}" title="away"></i>
                                     </div>
 
@@ -30,11 +31,11 @@
         <div class="col-md-9 chat-section">
             <div class="chat-header">
                 <div class="chat-image">
-                    {!! makeImageFromName($user->name) !!}
+                    {!! makeImageFromName($friendInfo->name) !!}
                 </div>
 
                 <div class="chat-name font-weight-bold">
-                    {{ $user->name }}
+                    {{ $friendInfo->name }}
                     <i class="fa fa-circle user-status-head" title="away"
                      id="userStatusHead{{ $friendInfo->id }}"></i>
                 </div>
@@ -49,7 +50,7 @@
                             </div>
 
                             <div class="chat-name font-weight-bold">
-                                User name
+                                {{ $friendInfo->name }}
                                 <span class="small time text-gray-500" title="2020-05-06 10:30 PM">
                                     10:30 pm
                                 </span>
@@ -91,3 +92,49 @@
     </div>
 @endsection
 
+
+
+@push('scripts')
+    <script>
+        let $chatInput = $(".chat-input");
+        let $chatInputToolbar = $(".chat-input-toolbar");
+        let $chatBody = $(".chat-body");
+        let $messageWrapper = $("#messageWrapper");
+        let friendID = "{{ $friendInfo->id }}";
+
+        $chatInput.keypress((e) => {
+            let message= $chatInput.html();
+            if(e.which === 13 && !e.shiftkey){
+                $chatInput.html("");
+                sendMessage(message);
+                return false;
+            }
+        });
+
+        function sendMessage(message){
+            let url = "{{ route('message.send-message') }}"
+            let form = $(this);
+            let formData = new FormData();
+            let token = "{{ csrf_token() }}";
+
+            formData.append('message', message);
+            formData.append('_token', token);
+            formData.append('receiver_id', friendID);
+            console.log(formData);
+            $.ajax({
+                url : url,
+                type : "POST",
+                data : formData,
+                processData: false,
+                contentType: false,
+                success : function(response){
+                    if(response.success){
+
+                    }
+                }
+            });
+        }
+    </script>
+
+    @include('scripts.push')
+@endpush
