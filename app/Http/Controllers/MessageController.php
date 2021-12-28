@@ -46,7 +46,7 @@ class MessageController extends Controller
                 $data['sender_name'] = $sender->name;
                 $data['receiver_id'] = $receiver_id;
                 $data['content'] = $message->message;
-                $data['created_at'] = $message->created_at;
+                $data['created_at'] = date_format($message->created_at, "Y-m-d l H:i:s");
                 $data['message_id'] = $message->id;
 
                 event(new PrivateMessageEvent($data));

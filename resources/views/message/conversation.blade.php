@@ -43,26 +43,7 @@
 
             <div class="chat-body" id="chatBody">
                 <div class="message-listing" id="messageWrapper">
-                    <div class="row message align-item-center mb-2">
-                        <div class="col-md-12 user-info">
-                            <div class="chat-image">
-                                {!! makeImageFromName("User Name") !!}
-                            </div>
 
-                            <div class="chat-name font-weight-bold">
-                                {{ $friendInfo->name }}
-                                <span class="small time text-gray-500" title="2020-05-06 10:30 PM">
-                                    10:30 pm
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="col-md-12 message-content">
-                            <div class="message-text">
-                                Message here
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -98,7 +79,7 @@
     <script>
         $(function(){
             let user_id = "{{ auth()->user()->id }}";
-
+            let app_name = "{{ env('APP_NAME') }}";
             let ip_address = "{{ env('APP_URL') }}";
             let socket_port = "{{ env('BROADCAST_PORT') }}";
 
@@ -131,6 +112,7 @@
 
             $chatInput.keypress((e) => {
                 let message= $chatInput.html();
+
                 if(e.which === 13 && !e.shiftkey){
                     $chatInput.html("");
                     sendMessage(message);
@@ -148,6 +130,8 @@
                 formData.append('_token', token);
                 formData.append('receiver_id', friendID);
 
+                appendMessageToSender(message);
+
                 $.ajax({
                     url : url,
                     type : "POST",
@@ -161,6 +145,68 @@
                     }
                 });
             }
+
+            //retrieve message from channel
+            socket.on(`${app_name}_database_private-channel:App\\Events\\PrivateMessageEvent`, (data) => {
+                appendMessageToReceiver(message);
+            });
+
+            function appendMessageToSender(message){
+                let name = "{{ $myInfo->name }}";
+                let image = "{!! makeImageFromName($myInfo->name) !!}";
+
+                let userInfo =  `<div class="col-md-12 user-info">\n`+
+                                    `<div class="chat-image">\n`+
+                                        image+
+                                    `</div>\n`+
+
+                                    `<div class="chat-name font-weight-bold">\n`+
+                                        name+
+                                        `<span class="small time text-gray-500" title=${getCurrentDateTime()}>\n`+
+                                            getCurrentTime()+
+                                        `</span>\n`+
+                                    `</div>\n`+
+                                `</div>`;
+
+                let messageContent =    `<div class="col-md-12 message-content">\n`+
+                                            `<div class="message-text">\n`+
+                                                message+
+                                            `</div>\n`+
+                                        `</div>`;
+
+                let newMessage = `<div class="row message align-item-center mb-2">${userInfo} ${messageContent}</div>`
+
+                $messageWrapper.append(newMessage);
+            }
+
+            function appendMessageToReceiver(message){
+                let name = "{{ $myInfo->name }}";
+                let image = "{!! makeImageFromName($myInfo->name) !!}";
+
+                let userInfo =  `<div class="col-md-12 user-info">\n`+
+                                    `<div class="chat-image">\n`+
+                                        image+
+                                    `</div>\n`+
+
+                                    `<div class="chat-name font-weight-bold">\n`+
+                                        name+
+                                        `<span class="small time text-gray-500" title=${getCurrentDateTime()}>\n`+
+                                            getCurrentTime()+
+                                        `</span>\n`+
+                                    `</div>\n`+
+                                `</div>`;
+
+                let messageContent =    `<div class="col-md-12 message-content">\n`+
+                                            `<div class="message-text">\n`+
+                                                message+
+                                            `</div>\n`+
+                                        `</div>`;
+
+                let newMessage = `<div class="row message align-item-center mb-2">${userInfo} ${messageContent}</div>`
+
+                $messageWrapper.append(newMessage);
+            }
+
         });
     </script>
 @endpush

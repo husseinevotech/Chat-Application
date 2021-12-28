@@ -29,15 +29,23 @@ io.on('connection', (socket) => {
     });
 });
 
+//redis configuraitons
 var redis = require('ioredis');
 var subscriber = new redis();
+var privateChannel = `${process.env.APP_NAME}_database_private-channel`;
 
-subscriber.psubscribe('*', (err, count) => {
-    console.log('abonniert zu allen kanals', count, err);
+subscriber.subscribe(privateChannel, () => {
+    console.log('abonniert zu allen kanals');
 });
 
-subscriber.on('pmessage', (subscribed, channel, message) => {
-    console.log('sub on msgd');
-    console.log(subscribed, channel, message);
+subscriber.on('message', (channel, message) => {
+    if(channel == privateChannel){
+        let decodedMsg= JSON.parse(message);
+        let data = decodedMsg.data.data;
+        let receiver_id = data.receiver_id;
+        let event = decodedMsg.event;
+
+        io.to(`${users[receiver_id]}`).emit(`${channel}:${event}`, data);
+    }
 });
 
