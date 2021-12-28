@@ -96,45 +96,71 @@
 
 @push('scripts')
     <script>
-        let $chatInput = $(".chat-input");
-        let $chatInputToolbar = $(".chat-input-toolbar");
-        let $chatBody = $(".chat-body");
-        let $messageWrapper = $("#messageWrapper");
-        let friendID = "{{ $friendInfo->id }}";
+        $(function(){
+            let user_id = "{{ auth()->user()->id }}";
 
-        $chatInput.keypress((e) => {
-            let message= $chatInput.html();
-            if(e.which === 13 && !e.shiftkey){
-                $chatInput.html("");
-                sendMessage(message);
-                return false;
-            }
-        });
+            let ip_address = "{{ env('APP_URL') }}";
+            let socket_port = "{{ env('BROADCAST_PORT') }}";
 
-        function sendMessage(message){
-            let url = "{{ route('message.send-message') }}"
-            let form = $(this);
-            let formData = new FormData();
-            let token = "{{ csrf_token() }}";
+            let path = `${ip_address}:${socket_port}`;
+            let socket = io(path);
 
-            formData.append('message', message);
-            formData.append('_token', token);
-            formData.append('receiver_id', friendID);
-            console.log(formData);
-            $.ajax({
-                url : url,
-                type : "POST",
-                data : formData,
-                processData: false,
-                contentType: false,
-                success : function(response){
-                    if(response.success){
+            socket.on('connect', () => {
+                socket.emit('user_connected', user_id);
+            });
 
+            socket.on('updateUserStatus', (data) => {
+                let $userStatusIcon = $('.user-status-icon');
+                $userStatusIcon.removeClass('text-success');
+                $userStatusIcon.attr('title', 'Away');
+
+                $.each(data, function (key, val) {
+                    if (val !== null && val !== 0) {
+                        let $userIcon = $(".user-icon-"+key);
+                        $userIcon.addClass('text-success');
+                        $userIcon.attr('title','Online');
                     }
+                });
+            });
+
+            let $chatInput = $(".chat-input");
+            let $chatInputToolbar = $(".chat-input-toolbar");
+            let $chatBody = $(".chat-body");
+            let $messageWrapper = $("#messageWrapper");
+            let friendID = "{{ $friendInfo->id }}";
+
+            $chatInput.keypress((e) => {
+                let message= $chatInput.html();
+                if(e.which === 13 && !e.shiftkey){
+                    $chatInput.html("");
+                    sendMessage(message);
+                    return false;
                 }
             });
-        }
-    </script>
 
-    @include('scripts.push')
+            function sendMessage(message){
+                let url = "{{ route('message.send-message') }}"
+                let form = $(this);
+                let formData = new FormData();
+                let token = "{{ csrf_token() }}";
+
+                formData.append('message', message);
+                formData.append('_token', token);
+                formData.append('receiver_id', friendID);
+
+                $.ajax({
+                    url : url,
+                    type : "POST",
+                    data : formData,
+                    processData: false,
+                    contentType: false,
+                    success : function(response){
+                        if(response.success){
+
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 @endpush

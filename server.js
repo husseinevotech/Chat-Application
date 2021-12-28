@@ -1,16 +1,19 @@
 //tutorial
-const express = require('express');
-const app = express();
-const server = require('http').createServer(app);
-const io = require('socket.io')(server, {
+var express = require('express');
+var app = express();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server, {
     cors : { origin : "*"}
 });
 
+require('dotenv').config();
+
 var users = [];
 
-server.listen(8009, function(){
-    console.log('listening to port 8009, (auf englisch)');
+server.listen(process.env.BROADCAST_PORT, function(){
+    console.log(`listening to port ${process.env.BROADCAST_PORT}, (auf englisch)`);
 });
+
 
 io.on('connection', (socket) => {
     socket.on("user_connected", (user_id) => {
@@ -23,12 +26,18 @@ io.on('connection', (socket) => {
         var i = users.indexOf(socket.id);
         users.splice(i, 1, 0);
         io.emit('updateUserStatus', users);
-        console.log(users);
     });
 });
 
+var redis = require('ioredis');
+var subscriber = new redis();
 
+subscriber.psubscribe('*', (err, count) => {
+    console.log('abonniert zu allen kanals', count, err);
+});
 
-
-
+subscriber.on('pmessage', (subscribed, channel, message) => {
+    console.log('sub on msgd');
+    console.log(subscribed, channel, message);
+});
 
