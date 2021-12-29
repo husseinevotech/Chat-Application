@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\PrivateMessageEvent;
 use App\Models\Message;
+use App\Models\MessageGroup;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,12 +15,12 @@ class MessageController extends Controller
         $users = User::where('id', '!=', Auth::id())->get();
         $friendInfo = User::findOrFail($userId);
         $myInfo = User::find(Auth::id());
-        // $groups = MessageGroup::get();
+        $groups = MessageGroup::get();
 
         $this->data['friendInfo'] = $friendInfo;
         $this->data['myInfo'] = $myInfo;
         $this->data['users'] = $users;
-        // $this->data['groups'] = $groups;
+        $this->data['groups'] = $groups;
 
         return view('message.conversation', $this->data);
     }
