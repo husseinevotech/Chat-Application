@@ -83,3 +83,7 @@ body {
     margin-right: 5px;
     opacity: 0.3;
 }
+
+.sender-side{
+    text-align: right;
+}

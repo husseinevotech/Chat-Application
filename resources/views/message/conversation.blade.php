@@ -148,7 +148,7 @@
 
             //retrieve message from channel
             socket.on(`${app_name}_database_private-channel:App\\Events\\PrivateMessageEvent`, (data) => {
-                appendMessageToReceiver(message);
+                appendMessageToReceiver(data);
             });
 
             function appendMessageToSender(message){
@@ -174,14 +174,14 @@
                                             `</div>\n`+
                                         `</div>`;
 
-                let newMessage = `<div class="row message align-item-center mb-2">${userInfo} ${messageContent}</div>`
+                let newMessage = `<div class="row message sender-side align-item-center mb-2">${userInfo} ${messageContent}</div>`
 
                 $messageWrapper.append(newMessage);
             }
 
             function appendMessageToReceiver(message){
-                let name = "{{ $myInfo->name }}";
-                let image = "{!! makeImageFromName($myInfo->name) !!}";
+                let name = "{{ $friendInfo->name }}";
+                let image = "{!! makeImageFromName($friendInfo->name) !!}";
 
                 let userInfo =  `<div class="col-md-12 user-info">\n`+
                                     `<div class="chat-image">\n`+
@@ -190,15 +190,15 @@
 
                                     `<div class="chat-name font-weight-bold">\n`+
                                         name+
-                                        `<span class="small time text-gray-500" title=${getCurrentDateTime()}>\n`+
-                                            getCurrentTime()+
+                                        `<span class="small time text-gray-500" title=${dateFormat(message.created_at)}>\n`+
+                                            timeFormat(message.created_at)+
                                         `</span>\n`+
                                     `</div>\n`+
                                 `</div>`;
 
                 let messageContent =    `<div class="col-md-12 message-content">\n`+
                                             `<div class="message-text">\n`+
-                                                message+
+                                                message.content+
                                             `</div>\n`+
                                         `</div>`;
 
