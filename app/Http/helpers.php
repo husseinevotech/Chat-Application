@@ -10,6 +10,6 @@ function makeImageFromName($name) {
         $shortName .= $w[0];
     }
 
-    $userImage = "<div class='name-image bg-primary'>$shortName</div>";
+    $userImage = sprintf("<div class=name-image bg-primary>%s</div>", $shortName);
     return $userImage;
 }

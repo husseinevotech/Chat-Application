@@ -1,10 +1,5 @@
 @extends('layouts.app')
 
-<style>
-    .select2-container {
-        width: 100% !important;
-    }
-</style>
 @section('content')
     <div class="row chat-row">
         <div class="col-md-3">
@@ -140,7 +135,6 @@
     </div>
 @endsection
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" />
 @push('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous"></script>
     <script>
@@ -152,8 +146,9 @@
 
 
             let user_id = "{{ auth()->user()->id }}";
-            let ip_address = '127.0.0.1';
-            let socket_port = '8005';
+            let ip_address = "{{ env('APP_URL') }}";
+            let socket_port = "{{ env('BROADCAST_PORT') }}";
+            let app_name = "{{ env('APP_NAME') }}";
             let socket = io(ip_address + ':' + socket_port);
             let groupId = "{!! $currentGroup->id !!}";
             let groupName = "{!! $currentGroup->name !!}";
@@ -164,19 +159,19 @@
                 socket.emit('joinGroup', data);
             });
 
-            // socket.on('updateUserStatus', (data) => {
-            //     let $userStatusIcon = $('.user-status-icon');
-            //     $userStatusIcon.removeClass('text-success');
-            //     $userStatusIcon.attr('title', 'Away');
-            //
-            //     $.each(data, function (key, val) {
-            //         if (val !== null && val !== 0) {
-            //             let $userIcon = $(".user-icon-"+key);
-            //             $userIcon.addClass('text-success');
-            //             $userIcon.attr('title','Online');
-            //         }
-            //     });
-            // });
+            socket.on('updateUserStatus', (data) => {
+                let $userStatusIcon = $('.user-status-icon');
+                $userStatusIcon.removeClass('text-success');
+                $userStatusIcon.attr('title', 'Away');
+
+                $.each(data, function (key, val) {
+                    if (val !== null && val !== 0) {
+                        let $userIcon = $(".user-icon-"+key);
+                        $userIcon.addClass('text-success');
+                        $userIcon.attr('title','Online');
+                    }
+                });
+            });
 
             $chatInput.keypress(function (e) {
                 let message = $(this).html();
@@ -235,7 +230,7 @@
                     '                        </div>';
 
 
-                let newMessage = '<div class="row message align-items-center mb-2">'
+                let newMessage = '<div class="row message sender-side align-items-center mb-2">'
                     +userInfo + messageContent +
                     '</div>';
 
@@ -282,7 +277,7 @@
 
             $("#selectMember").select2();
 
-            socket.on("groupMessage", function (message)
+            socket.on(`${app_name}_database_group-channel:App\\Events\\GroupMessageEvent`, function (message)
             {
                 appendMessageToReceiver(message);
             });
