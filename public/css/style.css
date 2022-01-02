@@ -91,3 +91,7 @@ body {
 .select2-container {
     width: 100% !important;
 }
+
+.typing-paragraph{
+    color: rgb(45, 69, 165);
+}

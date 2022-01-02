@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Events\GroupMessageEvent;
 use App\Events\PrivateMessageEvent;
+use App\Events\SignalTypingEvent;
+use App\Events\SignalTypingGroupEvent;
 use App\Models\Message;
 use App\Models\MessageGroup;
 use App\Models\User;
@@ -24,6 +26,33 @@ class MessageController extends Controller
         $this->data['groups'] = $groups;
 
         return view('message.conversation', $this->data);
+    }
+
+    public function signalTyping(Request $request)
+    {
+        $data['sender_id']= Auth::id();
+        $data['receiver_id'] = $request->receiver_id;
+        event(new SignalTypingEvent($data));
+        return response()->json([
+            'data' => $data,
+            'success' => true,
+            'message' => 'Typing'
+        ]);
+    }
+
+    public function signalTypingGroup(Request $request)
+    {
+        $sender = Auth::user();
+        $data['sender_id'] = $sender->id;
+        $data['sender_name'] = $sender->name;
+        $data['group_id'] = $request->message_group_id;
+
+        event(new SignalTypingGroupEvent($data));
+        return response()->json([
+            'data' => $data,
+            'success' => true,
+            'message' => 'Typing'
+        ]);
     }
 
     public function sendMessage(Request $request) {

@@ -25,6 +25,8 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('conversation/{userId}', [MessageController::class, 'conversation'])->name('message.conversation');
 Route::post('send-message', [MessageController::class, 'sendMessage'])->name('message.send-message');
+Route::post('signal-typing', [MessageController::class, 'signalTyping'])->name('message.signal-typing');
+Route::post('signal-typing', [MessageController::class, 'signalTypingGroup'])->name('message.signal-typing-group');
 
 Route::post('send-group-message', [MessageController::class, 'sendGroupMessage'])
     ->name('message.send-group-message');

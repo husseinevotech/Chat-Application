@@ -62,6 +62,8 @@ var redis = require('ioredis');
 var subscriber = new redis();
 var privateChannel = `${process.env.APP_NAME}_database_private-channel`;
 var groupChannel = `${process.env.APP_NAME}_database_group-channel`;
+var signalChannel = `${process.env.APP_NAME}_database_signal-channel`;
+var signalGroupChannel = `${process.env.APP_NAME}_database_signal-group-channel`;
 
 subscriber.subscribe(privateChannel, () => {
     console.log('abonniert zu allen kanals');
@@ -69,6 +71,14 @@ subscriber.subscribe(privateChannel, () => {
 
 subscriber.subscribe(groupChannel, () => {
     console.log('abonniert zu gruppe');
+});
+
+subscriber.subscribe(signalChannel, () => {
+    console.log('abonniert zu signal');
+});
+
+subscriber.subscribe(signalGroupChannel, () => {
+    console.log('abonniert zu signal group');
 });
 
 subscriber.on('message', (channel, message) => {
@@ -92,6 +102,25 @@ subscriber.on('message', (channel, message) => {
             let room = getRoomID(data.group_id);
             socket.to(room).emit(`${channel}:${event}`, data);
         }
+    }
+
+    if(channel == signalChannel){
+        let decodedMsg= JSON.parse(message);
+        let data = decodedMsg.data.data;
+        let receiver_id = data.receiver_id;
+        let event = decodedMsg.event;
+        io.to(`${users[receiver_id]}`).emit(`${channel}:${event}`, data);
+    }
+
+    if(channel == signalGroupChannel){
+        let decodedMsg= JSON.parse(message);
+        let data = decodedMsg.data.data;
+        let event = decodedMsg.event;
+
+        let socket_id = getSocketIdOfUserInGroup(data.sender_id, data.group_id);
+        let socket = io.sockets.sockets.get(socket_id);
+        let room = getRoomID(data.group_id);
+        socket.to(room).emit(`${channel}:${event}`, data);
     }
 });
 

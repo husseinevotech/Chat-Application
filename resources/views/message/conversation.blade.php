@@ -50,6 +50,9 @@
             </div>
 
             <div class="chat-box">
+                <div class="typing-div" hidden>
+                    <p class="typing-paragraph">typing...</p>
+                </div>
                 <div class="chat-input bg-white" id="chatInput" contenteditable="">
 
                 </div>
@@ -116,7 +119,7 @@
 
             $chatInput.keypress((e) => {
                 let message= $chatInput.html();
-
+                signalTyping();
                 if(e.which === 13 && !e.shiftkey){
                     $chatInput.html("");
                     sendMessage(message);
@@ -150,9 +153,39 @@
                 });
             }
 
+            function signalTyping(){
+                let url = "{{ route('message.signal-typing') }}"
+                let form = $(this);
+                let formData = new FormData();
+                let token = "{{ csrf_token() }}";
+
+                formData.append('_token', token);
+                formData.append('receiver_id', friendID);
+
+                $.ajax({
+                    url : url,
+                    type : "POST",
+                    data : formData,
+                    processData: false,
+                    contentType: false,
+                    success : function(response){
+                        if(response.success){
+
+                        }
+                    }
+                });
+            }
+
             //retrieve message from channel
             socket.on(`${app_name}_database_private-channel:App\\Events\\PrivateMessageEvent`, (data) => {
                 appendMessageToReceiver(data);
+            });
+
+            socket.on(`${app_name}_database_signal-channel:App\\Events\\SignalTypingEvent`, (data) => {
+                let typingDiv = $(".typing-div");
+                typingDiv.removeAttr("hidden");
+                setTimeout(() => typingDiv.prop("hidden", true), 5000);
+
             });
 
             function appendMessageToSender(message){

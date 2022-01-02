@@ -58,6 +58,10 @@
             </div>
 
             <div class="chat-box">
+                <div class="typing-div" hidden>
+                    <p class="typing-paragraph"></p>
+                </div>
+
                 <div class="chat-input bg-white" id="chatInput" contenteditable="">
 
                 </div>
@@ -175,12 +179,36 @@
 
             $chatInput.keypress(function (e) {
                 let message = $(this).html();
+                signalTypingGroup();
                 if (e.which === 13 && !e.shiftKey) {
                     $chatInput.html("");
                     sendMessage(message);
                     return false;
                 }
             });
+
+            function signalTypingGroup(){
+                let url = "{{ route('message.signal-typing-group') }}"
+                let form = $(this);
+                let formData = new FormData();
+                let token = "{{ csrf_token() }}";
+
+                formData.append('_token', token);
+                formData.append('message_group_id', groupId);
+
+                $.ajax({
+                    url : url,
+                    type : "POST",
+                    data : formData,
+                    processData: false,
+                    contentType: false,
+                    success : function(response){
+                        if(response.success){
+
+                        }
+                    }
+                });
+            }
 
             function sendMessage(message) {
                 let url = "{{ route('message.send-group-message') }}";
@@ -268,6 +296,15 @@
             socket.on("private-channel:App\\Events\\PrivateMessageEvent", function (message)
             {
                 appendMessageToReceiver(message);
+            });
+
+            socket.on(`${app_name}_database_signal-group-channel:App\\Events\\SignalTypingGroupEvent`, (data) => {
+                let typingDiv = $(".typing-div");
+                let typingParagraph = $(".typing-paragraph");
+                typingDiv.removeAttr("hidden");
+                typingParagraph.html(`${data.sender_name} is typing...`);
+                setTimeout(() => typingDiv.prop("hidden", true), 5000);
+
             });
 
             let $addGroupModal = $("#addGroupModal");
